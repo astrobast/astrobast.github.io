@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Astrochat</title>
+  <style>
+    .self { color: green }
+    .other { color: black }
+  </style>
+</head>
+<body>
+
+<h2>Astrochat</h2>
+<div id="messages"></div>
+<input id="input" placeholder="message…" autofocus>
+
+<script>
+const TOPIC = "astrochat-bast-25";
+const SERVER = `https://ntfy.sh/${TOPIC}`;
+let USER = localStorage.getItem("user");
+
+if (!USER) {
+  USER = prompt("Username") || "anon";
+  localStorage.setItem("user", USER);
+}
+
+const messages = document.getElementById("messages");
+const input = document.getElementById("input");
+
+function add(msg, self=false) {
+  const div = document.createElement("div");
+  div.className = self ? "self" : "other";
+  div.textContent = msg;
+  messages.appendChild(div);
+  messages.scrollTop = messages.scrollHeight;
+}
+
+input.addEventListener("keydown", e => {
+  if (e.key === "Enter" && input.value.trim()) {
+    fetch(SERVER, {
+      method: "POST",
+      body: `[${USER}] ${input.value}`
+    });
+    add(`[${USER}] ${input.value}`, true);
+    input.value = "";
+  }
+});
+
+(async () => {
+  const res = await fetch(`${SERVER}/raw`);
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+
+  while (true) {
+    const { value, done } = await reader.read();
+    if (done) break;
+
+    decoder.decode(value)
+      .split("\n")
+      .filter(Boolean)
+      .forEach(line => {
+        if (!line.startsWith(`[${USER}]`)) {
+          add(line);
+        }
+      });
+  }
+})();
+</script>
+
+</body>
+</html>
