@@ -4,5 +4,4 @@
 There are two versions of Astrochat:
 * Astrochat for Linux
 * Astrochat Web
-Astrochat Web:
 [![Astrochat Web](https://snakey.neocities.org/astrochat-web.png)](https://astrobast.github.io/chat.sh)
